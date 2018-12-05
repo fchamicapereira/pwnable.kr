@@ -1,0 +1,2 @@
+- decompress with upx
+- flag hidden in binary: "UPX...? sounds like a delivery service :)"
