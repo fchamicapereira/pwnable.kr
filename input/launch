@@ -1,0 +1,3 @@
+#!/bin/bash
+
+python exploit.py | xargs -d '\x01' ./input
