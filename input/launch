@@ -1,3 +1,14 @@
 #!/bin/bash
 
-python exploit.py | xargs -d '\x01' ./input
+# stage 1
+
+python -c "\
+exp = [ 'A' for i in range(99) ]; \
+exp[64] = '\x00'; \
+exp[65] = '\x20\n\r'; \
+print '\x01'.join(exp)\
+" > args
+
+xargs -a args -d '\x01' ./a.out <<< `python -c "print '\x01\x02\x03\x04'"`
+
+rm args
