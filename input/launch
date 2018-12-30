@@ -1,14 +1,51 @@
 #!/bin/bash
 
-# stage 1
+if [ ! -f ./envscript.c ] ; then
+    cat > envscript.c <<- EOM
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 
+int main() {
+    setenv("\xde\xad\xbe\xef", "\xca\xfe\xba\xbe", 1);
+    execl("launch", "", NULL);
+    return 0;
+}
+EOM
+
+    gcc envscript.c -o envscript
+    ./envscript
+    exit
+fi
+
+# stage 1
 python -c "\
 exp = [ 'A' for i in range(99) ]; \
 exp[64] = '\x00'; \
 exp[65] = '\x20\n\r'; \
+exp[66] = '\x38\x38\x38\x36'; \
 print '\x01'.join(exp)\
 " > args
 
-xargs -a args -d '\x01' ./a.out <<< `python -c "print '\x01\x02\x03\x04'"`
+python -c "print '\x00\x0a\x00\xff'" > stdin
+python -c "print '\x00\x0a\x02\xff'" > stderr
+python -c "with open('\x0a', 'w') as f: f.write('\x00\x00\x00\x00')"
 
-rm args
+# PORT 8888
+
+xargs -a args -d '\x01' ./input < stdin 2< stderr > launch.out &
+
+sleep 3
+python - << EOF
+import socket
+HOST = '127.0.0.1'
+PORT = 8886
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((HOST, PORT))
+s.sendall('\xde\xad\xbe\xef')
+s.close()
+EOF
+
+rm -rf args stdin stderr envscript envscript.c ?
+cat launch.out
+rm launch.out
