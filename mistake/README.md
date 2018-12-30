@@ -1,0 +1,1 @@
+python -c 'print "\x00"*10+"\x01"' | ./mistake
