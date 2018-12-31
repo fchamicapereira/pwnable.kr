@@ -1,0 +1,1 @@
+did not use the path, just run like `./cmd1 '/bin/cat /home/cmd1/fl*'`
